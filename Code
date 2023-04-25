@@ -1,0 +1,127 @@
+import random
+from termcolor import colored
+print("Welcome to Eddie's Dungeon!")
+# define the player's initial stats
+player_name = input("Enter your name: ")
+player_health = 20
+player_weapon = input("Enter your weapon of choice: ")
+
+# define the player's character class
+def choose_class():
+    player_class = input("Choose your class (warrior, mage, or rogue): ")
+    if player_class == "warrior":
+        player_attack = 5
+        player_defense = 5
+        player_name_colored = colored(player_name, "blue")
+    elif player_class == "mage":
+        player_attack = 8
+        player_defense = 2
+        player_name_colored = colored(player_name, "green")
+    elif player_class == "rogue":
+        player_attack = 6
+        player_defense = 4
+        player_name_colored = colored(player_name, "yellow")
+    else:
+        print("Invalid class selection. Please choose warrior, mage, or rogue.")
+        return choose_class()
+    return player_attack, player_defense, player_name_colored
+
+# define the leveling system
+def level_up(player_health, player_attack, player_defense):
+    player_health += 5
+    player_attack += 2
+    player_defense += 1
+    print("You leveled up! Your new stats are:")
+    print("Health:", player_health)
+    print("Attack:", player_attack)
+    print("Defense:", player_defense)
+    return player_health, player_attack, player_defense
+
+# define the combat system
+def combat(enemy_health, enemy_attack, enemy_type, player_health, player_attack, player_defense, player_name_colored):
+    print("You encounter a", colored(enemy_type, "red") + ".")
+    while enemy_health > 0 and player_health > 0:
+        action = input("Choose your action (attack, defend, or run): ")
+        if action == "attack":
+            player_roll = random.randint(1, 6) + player_attack
+            enemy_roll = random.randint(1, 6) + enemy_attack
+            print(player_name_colored + " rolls a", player_roll)
+            print("The", colored(enemy_type, "red"), "rolls a", enemy_roll)
+            if player_roll > enemy_roll:
+                damage = player_roll - enemy_roll
+                enemy_health -= damage
+                print("You deal", damage, "damage to the", colored(enemy_type, "red"))
+            elif enemy_roll > player_roll:
+                damage = enemy_roll - player_roll
+                player_health -= damage
+                print("The", colored(enemy_type, "red"), "deals", damage, "damage to you")
+            else:
+                print("You both miss each other")
+        elif action == "defend":
+            player_roll = random.randint(1, 6) + player_defense
+            enemy_roll = random.randint(1, 6) + enemy_attack
+            print(player_name_colored + " rolls a", player_roll)
+            print("The", colored(enemy_type, "red"), "rolls a", enemy_roll)
+            if enemy_roll > player_roll:
+                damage = enemy_roll - player_roll
+                player_health -= damage
+                print("The", colored(enemy_type, "red"), "deals", damage, "damage to you")
+            else:
+                print("You successfully defend the attack")
+        elif action == "run":
+            run_chance = random.randint(1, 6)
+            if run_chance >= 4:
+                print("You successfully escape.")
+                return player_health
+            else:
+                               print("You failed to run away.")
+        else:
+            print("Invalid action. Choose attack, defend, or run.")
+        print("Your health:", player_health)
+        print("Enemy health:", enemy_health)
+    if enemy_health <= 0:
+        print("You defeat the", colored(enemy_type, "red"))
+        return True, player_health
+    else:
+        print("You are defeated by the", colored(enemy_type, "red"))
+        return False, player_health
+
+# define the game loop
+def game_loop():
+    player_attack, player_defense, player_name_colored = choose_class()
+    global player_health
+    mob_count = 0
+    boss_count = 0
+    level = 1
+    while player_health > 0:
+        if mob_count < 3:
+            mob_health = 8
+            mob_attack = 3
+            combat_result, player_health = combat(mob_health, mob_attack, "Skeleton", player_health, player_attack, player_defense, player_name_colored)
+            if combat_result:
+                mob_count += 1
+                if mob_count % 3 == 0:
+                    level += 1
+                    player_health, player_attack, player_defense = level_up(player_health, player_attack, player_defense)
+        elif boss_count == 0:
+            boss_health = 10
+            boss_attack = 5
+            combat_result, player_health = combat(boss_health, boss_attack, "Demon", player_health, player_attack, player_defense, player_name_colored)
+            if combat_result:
+                boss_count += 1
+                level += 1
+                player_health, player_attack, player_defense = level_up(player_health, player_attack, player_defense)
+        elif boss_count == 1:
+            boss_health = 14
+            boss_attack = 7
+            combat_result, player_health = combat(boss_health, boss_attack, "Demon Lord", player_health, player_attack, player_defense, player_name_colored)
+            if combat_result:
+                boss_count += 1
+                level += 1
+                player_health, player_attack, player_defense = level_up(player_health, player_attack, player_defense)
+        else:
+            print("Congratulations!")
+            break
+
+game_loop()
+
